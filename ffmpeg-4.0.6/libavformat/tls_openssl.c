@@ -48,7 +48,7 @@ typedef struct TLSContext {
 #endif
 } TLSContext;
 
-#if HAVE_THREADS
+#if HAVE_THREADS && OPENSSL_VERSION_NUMBER < 0x10100000L
 #include <openssl/crypto.h>
 pthread_mutex_t *openssl_mutexes;
 static void openssl_lock(int mode, int type, const char *file, int line)
@@ -70,9 +70,11 @@ int ff_openssl_init(void)
 {
     ff_lock_avformat();
     if (!openssl_init) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
         SSL_library_init();
         SSL_load_error_strings();
-#if HAVE_THREADS
+#endif
+#if HAVE_THREADS && OPENSSL_VERSION_NUMBER < 0x10100000L
         if (!CRYPTO_get_locking_callback()) {
             int i;
             openssl_mutexes = av_malloc_array(sizeof(pthread_mutex_t), CRYPTO_num_locks());
@@ -101,7 +103,7 @@ void ff_openssl_deinit(void)
     ff_lock_avformat();
     openssl_init--;
     if (!openssl_init) {
-#if HAVE_THREADS
+#if HAVE_THREADS && OPENSSL_VERSION_NUMBER < 0x10100000L
         if (CRYPTO_get_locking_callback() == openssl_lock) {
             int i;
             CRYPTO_set_locking_callback(NULL);
