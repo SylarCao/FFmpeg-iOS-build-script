@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # directories
-FF_VERSION="4.3.1"
+FF_VERSION="4.0.6"
 #FF_VERSION="snapshot-git"
 if [[ $FFMPEG_VERSION != "" ]]; then
   FF_VERSION=$FFMPEG_VERSION
@@ -18,21 +18,21 @@ THIN=`pwd`/"thin"
 
 #FDK_AAC=`pwd`/../fdk-aac-build-script-for-iOS/fdk-aac-ios
 
+OPENSSL=`pwd`/openssl111d
+
 CONFIGURE_FLAGS="--enable-cross-compile --disable-debug --disable-programs \
                  --disable-doc --enable-pic"
 
-if [ "$X264" ]
-then
-	CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-gpl --enable-libx264"
-fi
 
-if [ "$FDK_AAC" ]
-then
-	CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libfdk-aac --enable-nonfree"
-fi
+CONFIGURE_FLAGS="$CONFIGURE_FLAGS \
+
+--enable-protocol=https \
+
+--enable-openssl --enable-protocol=crypto --enable-protocol=tls_openssl"
 
 # avresample
 #CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-avresample"
+
 
 ARCHS="arm64 armv7 x86_64 i386"
 
@@ -131,6 +131,9 @@ then
 			CFLAGS="$CFLAGS -I$FDK_AAC/include"
 			LDFLAGS="$LDFLAGS -L$FDK_AAC/lib"
 		fi
+
+		CFLAGS="$CFLAGS -I$OPENSSL/include"
+		LDFLAGS="$LDFLAGS -L$OPENSSL/lib"
 
 		TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
 		    --target-os=darwin \
